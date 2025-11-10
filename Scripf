@@ -1,0 +1,523 @@
+-- Creator Steal & Instant Steal Script
+-- Execute com um executor (Synapse, KRNL, etc.)
+
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Key correta
+local CORRECT_KEY = "240414"
+
+-- VariÃ¡veis globais
+local creatorPart = nil
+
+-- Criar UI de Key
+local function CreateKeyUI()
+    local ScreenGui = Instance.new("ScreenGui")
+    local Blur = Instance.new("Frame")
+    local MainFrame = Instance.new("Frame")
+    local TopBar = Instance.new("Frame")
+    local Title = Instance.new("TextLabel")
+    local CloseBtn = Instance.new("TextButton")
+    local Container = Instance.new("Frame")
+    local KeyBox = Instance.new("TextBox")
+    local EnterButton = Instance.new("TextButton")
+    local StatusDot = Instance.new("Frame")
+    local StatusLabel = Instance.new("TextLabel")
+    
+    -- Configurar ScreenGui
+    ScreenGui.Name = "KeyGui"
+    ScreenGui.Parent = game.CoreGui
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    -- Blur de fundo
+    Blur.Name = "Blur"
+    Blur.Parent = ScreenGui
+    Blur.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Blur.BackgroundTransparency = 0.3
+    Blur.BorderSizePixel = 0
+    Blur.Position = UDim2.new(0.5, -110, 0.5, -75)
+    Blur.Size = UDim2.new(0, 220, 0, 150)
+    
+    local BlurCorner = Instance.new("UICorner")
+    BlurCorner.CornerRadius = UDim.new(0, 12)
+    BlurCorner.Parent = Blur
+    
+    -- MainFrame
+    MainFrame.Name = "MainFrame"
+    MainFrame.Parent = Blur
+    MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    MainFrame.BackgroundTransparency = 0.3
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Size = UDim2.new(1, 0, 1, 0)
+    MainFrame.Active = true
+    
+    local MainCorner = Instance.new("UICorner")
+    MainCorner.CornerRadius = UDim.new(0, 12)
+    MainCorner.Parent = MainFrame
+    
+    local MainStroke = Instance.new("UIStroke")
+    MainStroke.Color = Color3.fromRGB(80, 80, 80)
+    MainStroke.Thickness = 1
+    MainStroke.Transparency = 0.5
+    MainStroke.Parent = MainFrame
+    
+    -- TopBar
+    TopBar.Name = "TopBar"
+    TopBar.Parent = MainFrame
+    TopBar.BackgroundTransparency = 1
+    TopBar.Size = UDim2.new(1, 0, 0, 25)
+    TopBar.Active = true
+    
+    -- Sistema de arrastar
+    local dragging
+    local dragInput
+    local dragStart
+    local startPos
+    
+    local function update(input)
+        local delta = input.Position - dragStart
+        Blur.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+    
+    TopBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = Blur.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    
+    TopBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            update(input)
+        end
+    end)
+    
+    -- Title
+    Title.Name = "Title"
+    Title.Parent = TopBar
+    Title.BackgroundTransparency = 1
+    Title.Position = UDim2.new(0, 10, 0, 0)
+    Title.Size = UDim2.new(1, -40, 1, 0)
+    Title.Font = Enum.Font.GothamMedium
+    Title.Text = "Key System"
+    Title.TextColor3 = Color3.fromRGB(200, 200, 200)
+    Title.TextSize = 11
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    
+    -- CloseBtn
+    CloseBtn.Name = "CloseBtn"
+    CloseBtn.Parent = TopBar
+    CloseBtn.BackgroundTransparency = 1
+    CloseBtn.Position = UDim2.new(1, -25, 0, 0)
+    CloseBtn.Size = UDim2.new(0, 25, 0, 25)
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.Text = "Ã—"
+    CloseBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
+    CloseBtn.TextSize = 18
+    
+    -- Container
+    Container.Name = "Container"
+    Container.Parent = MainFrame
+    Container.BackgroundTransparency = 1
+    Container.Position = UDim2.new(0, 0, 0, 30)
+    Container.Size = UDim2.new(1, 0, 1, -35)
+    
+    -- KeyBox
+    KeyBox.Name = "KeyBox"
+    KeyBox.Parent = Container
+    KeyBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    KeyBox.BackgroundTransparency = 0.4
+    KeyBox.BorderSizePixel = 0
+    KeyBox.Position = UDim2.new(0.08, 0, 0.15, 0)
+    KeyBox.Size = UDim2.new(0.84, 0, 0, 26)
+    KeyBox.Font = Enum.Font.Gotham
+    KeyBox.PlaceholderText = "Enter Key"
+    KeyBox.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
+    KeyBox.Text = ""
+    KeyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    KeyBox.TextSize = 10
+    KeyBox.ClearTextOnFocus = false
+    
+    local BoxCorner = Instance.new("UICorner")
+    BoxCorner.CornerRadius = UDim.new(0, 6)
+    BoxCorner.Parent = KeyBox
+    
+    local BoxStroke = Instance.new("UIStroke")
+    BoxStroke.Color = Color3.fromRGB(70, 70, 70)
+    BoxStroke.Thickness = 1
+    BoxStroke.Transparency = 0.6
+    BoxStroke.Parent = KeyBox
+    
+    -- EnterButton
+    EnterButton.Name = "EnterButton"
+    EnterButton.Parent = Container
+    EnterButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    EnterButton.BackgroundTransparency = 0.2
+    EnterButton.BorderSizePixel = 0
+    EnterButton.Position = UDim2.new(0.08, 0, 0.45, 0)
+    EnterButton.Size = UDim2.new(0.84, 0, 0, 26)
+    EnterButton.Font = Enum.Font.GothamMedium
+    EnterButton.Text = "Enter"
+    EnterButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    EnterButton.TextSize = 11
+    EnterButton.AutoButtonColor = false
+    
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 6)
+    ButtonCorner.Parent = EnterButton
+    
+    local ButtonStroke = Instance.new("UIStroke")
+    ButtonStroke.Color = Color3.fromRGB(90, 90, 90)
+    ButtonStroke.Thickness = 1
+    ButtonStroke.Transparency = 0.5
+    ButtonStroke.Parent = EnterButton
+    
+    -- StatusDot
+    StatusDot.Name = "StatusDot"
+    StatusDot.Parent = Container
+    StatusDot.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    StatusDot.BorderSizePixel = 0
+    StatusDot.Position = UDim2.new(0.08, 0, 0.85, 0)
+    StatusDot.Size = UDim2.new(0, 6, 0, 6)
+    
+    local DotCorner = Instance.new("UICorner")
+    DotCorner.CornerRadius = UDim.new(1, 0)
+    DotCorner.Parent = StatusDot
+    
+    -- StatusLabel
+    StatusLabel.Name = "StatusLabel"
+    StatusLabel.Parent = Container
+    StatusLabel.BackgroundTransparency = 1
+    StatusLabel.Position = UDim2.new(0.08, 12, 0.82, 0)
+    StatusLabel.Size = UDim2.new(0.84, -12, 0, 12)
+    StatusLabel.Font = Enum.Font.Gotham
+    StatusLabel.Text = "Ready"
+    StatusLabel.TextColor3 = Color3.fromRGB(140, 140, 140)
+    StatusLabel.TextSize = 9
+    StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    -- FunÃ§Ã£o para verificar key
+    local function CheckKey()
+        local key = KeyBox.Text:match("^%s*(.-)%s*$")
+        
+        if key == "" then
+            StatusLabel.Text = "Enter a key"
+            TweenService:Create(StatusLabel, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 150, 50)}):Play()
+            TweenService:Create(StatusDot, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 150, 50)}):Play()
+            TweenService:Create(BoxStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(255, 150, 50), Transparency = 0.3}):Play()
+            wait(2)
+            StatusLabel.Text = "Ready"
+            TweenService:Create(StatusLabel, TweenInfo.new(0.3), {TextColor3 = Color3.fromRGB(140, 140, 140)}):Play()
+            TweenService:Create(StatusDot, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(100, 100, 100)}):Play()
+            TweenService:Create(BoxStroke, TweenInfo.new(0.3), {Color = Color3.fromRGB(70, 70, 70), Transparency = 0.6}):Play()
+            return
+        end
+        
+        if key == CORRECT_KEY then
+            StatusLabel.Text = "Correct!"
+            TweenService:Create(StatusLabel, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(100, 255, 100)}):Play()
+            TweenService:Create(StatusDot, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(100, 255, 100)}):Play()
+            wait(0.5)
+            
+            -- Fechar Key UI e abrir Main UI
+            TweenService:Create(Blur, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(MainFrame, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+            wait(0.3)
+            ScreenGui:Destroy()
+            CreateMainUI()
+        else
+            StatusLabel.Text = "Wrong key"
+            TweenService:Create(StatusLabel, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 100, 100)}):Play()
+            TweenService:Create(StatusDot, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 100, 100)}):Play()
+            TweenService:Create(BoxStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(255, 100, 100), Transparency = 0.3}):Play()
+            wait(2)
+            StatusLabel.Text = "Ready"
+            TweenService:Create(StatusLabel, TweenInfo.new(0.3), {TextColor3 = Color3.fromRGB(140, 140, 140)}):Play()
+            TweenService:Create(StatusDot, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(100, 100, 100)}):Play()
+            TweenService:Create(BoxStroke, TweenInfo.new(0.3), {Color = Color3.fromRGB(70, 70, 70), Transparency = 0.6}):Play()
+        end
+    end
+    
+    -- Efeitos hover
+    EnterButton.MouseEnter:Connect(function()
+        TweenService:Create(EnterButton, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
+        TweenService:Create(ButtonStroke, TweenInfo.new(0.2), {Transparency = 0.2}):Play()
+    end)
+    
+    EnterButton.MouseLeave:Connect(function()
+        TweenService:Create(EnterButton, TweenInfo.new(0.2), {BackgroundTransparency = 0.2}):Play()
+        TweenService:Create(ButtonStroke, TweenInfo.new(0.2), {Transparency = 0.5}):Play()
+    end)
+    
+    CloseBtn.MouseEnter:Connect(function()
+        TweenService:Create(CloseBtn, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 100, 100)}):Play()
+    end)
+    
+    CloseBtn.MouseLeave:Connect(function()
+        TweenService:Create(CloseBtn, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(180, 180, 180)}):Play()
+    end)
+    
+    KeyBox.Focused:Connect(function()
+        TweenService:Create(BoxStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(120, 120, 120), Transparency = 0.3}):Play()
+    end)
+    
+    KeyBox.FocusLost:Connect(function(enterPressed)
+        TweenService:Create(BoxStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(70, 70, 70), Transparency = 0.6}):Play()
+        if enterPressed then
+            CheckKey()
+        end
+    end)
+    
+    -- Eventos
+    EnterButton.MouseButton1Click:Connect(CheckKey)
+    
+    CloseBtn.MouseButton1Click:Connect(function()
+        TweenService:Create(Blur, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(MainFrame, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+        wait(0.3)
+        ScreenGui:Destroy()
+    end)
+end
+
+-- Criar UI Principal
+function CreateMainUI()
+    local ScreenGui = Instance.new("ScreenGui")
+    local Blur = Instance.new("Frame")
+    local MainFrame = Instance.new("Frame")
+    local TopBar = Instance.new("Frame")
+    local Title = Instance.new("TextLabel")
+    local CloseBtn = Instance.new("TextButton")
+    local Container = Instance.new("Frame")
+    local CreatorStealBtn = Instance.new("TextButton")
+    local InstantStealBtn = Instance.new("TextButton")
+    local StatusDot = Instance.new("Frame")
+    local StatusLabel = Instance.new("TextLabel")
+    
+    -- Configurar ScreenGui
+    ScreenGui.Name = "StealGui"
+    ScreenGui.Parent = game.CoreGui
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    -- Blur de fundo
+    Blur.Name = "Blur"
+    Blur.Parent = ScreenGui
+    Blur.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Blur.BackgroundTransparency = 0.3
+    Blur.BorderSizePixel = 0
+    Blur.Position = UDim2.new(0.5, -110, 0.5, -75)
+    Blur.Size = UDim2.new(0, 220, 0, 150)
+    
+    local BlurCorner = Instance.new("UICorner")
+    BlurCorner.CornerRadius = UDim.new(0, 12)
+    BlurCorner.Parent = Blur
+    
+    -- MainFrame
+    MainFrame.Name = "MainFrame"
+    MainFrame.Parent = Blur
+    MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    MainFrame.BackgroundTransparency = 0.3
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Size = UDim2.new(1, 0, 1, 0)
+    MainFrame.Active = true
+    
+    local MainCorner = Instance.new("UICorner")
+    MainCorner.CornerRadius = UDim.new(0, 12)
+    MainCorner.Parent = MainFrame
+    
+    local MainStroke = Instance.new("UIStroke")
+    MainStroke.Color = Color3.fromRGB(80, 80, 80)
+    MainStroke.Thickness = 1
+    MainStroke.Transparency = 0.5
+    MainStroke.Parent = MainFrame
+    
+    -- TopBar
+    TopBar.Name = "TopBar"
+    TopBar.Parent = MainFrame
+    TopBar.BackgroundTransparency = 1
+    TopBar.Size = UDim2.new(1, 0, 0, 25)
+    TopBar.Active = true
+    
+    -- Sistema de arrastar
+    local dragging
+    local dragInput
+    local dragStart
+    local startPos
+    
+    local function update(input)
+        local delta = input.Position - dragStart
+        Blur.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+    
+    TopBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = Blur.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    
+    TopBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            update(input)
+        end
+    end)
+    
+    -- Title
+    Title.Name = "Title"
+    Title.Parent = TopBar
+    Title.BackgroundTransparency = 1
+    Title.Position = UDim2.new(0, 10, 0, 0)
+    Title.Size = UDim2.new(1, -40, 1, 0)
+    Title.Font = Enum.Font.GothamMedium
+    Title.Text = "Steal System"
+    Title.TextColor3 = Color3.fromRGB(200, 200, 200)
+    Title.TextSize = 11
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    
+    -- CloseBtn
+    CloseBtn.Name = "CloseBtn"
+    CloseBtn.Parent = TopBar
+    CloseBtn.BackgroundTransparency = 1
+    CloseBtn.Position = UDim2.new(1, -25, 0, 0)
+    CloseBtn.Size = UDim2.new(0, 25, 0, 25)
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.Text = "Ã—"
+    CloseBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
+    CloseBtn.TextSize = 18
+    
+    -- Container
+    Container.Name = "Container"
+    Container.Parent = MainFrame
+    Container.BackgroundTransparency = 1
+    Container.Position = UDim2.new(0, 0, 0, 30)
+    Container.Size = UDim2.new(1, 0, 1, -35)
+    
+    -- CreatorStealBtn
+    CreatorStealBtn.Name = "CreatorStealBtn"
+    CreatorStealBtn.Parent = Container
+    CreatorStealBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    CreatorStealBtn.BackgroundTransparency = 0.2
+    CreatorStealBtn.BorderSizePixel = 0
+    CreatorStealBtn.Position = UDim2.new(0.08, 0, 0.15, 0)
+    CreatorStealBtn.Size = UDim2.new(0.84, 0, 0, 26)
+    CreatorStealBtn.Font = Enum.Font.GothamMedium
+    CreatorStealBtn.Text = "Creator Steal"
+    CreatorStealBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CreatorStealBtn.TextSize = 11
+    CreatorStealBtn.AutoButtonColor = false
+    
+    local CreatorCorner = Instance.new("UICorner")
+    CreatorCorner.CornerRadius = UDim.new(0, 6)
+    CreatorCorner.Parent = CreatorStealBtn
+    
+    local CreatorStroke = Instance.new("UIStroke")
+    CreatorStroke.Color = Color3.fromRGB(90, 90, 90)
+    CreatorStroke.Thickness = 1
+    CreatorStroke.Transparency = 0.5
+    CreatorStroke.Parent = CreatorStealBtn
+    
+    -- InstantStealBtn
+    InstantStealBtn.Name = "InstantStealBtn"
+    InstantStealBtn.Parent = Container
+    InstantStealBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    InstantStealBtn.BackgroundTransparency = 0.2
+    InstantStealBtn.BorderSizePixel = 0
+    InstantStealBtn.Position = UDim2.new(0.08, 0, 0.45, 0)
+    InstantStealBtn.Size = UDim2.new(0.84, 0, 0, 26)
+    InstantStealBtn.Font = Enum.Font.GothamMedium
+    InstantStealBtn.Text = "Instant Steal"
+    InstantStealBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    InstantStealBtn.TextSize = 11
+    InstantStealBtn.AutoButtonColor = false
+    
+    local InstantCorner = Instance.new("UICorner")
+    InstantCorner.CornerRadius = UDim.new(0, 6)
+    InstantCorner.Parent = InstantStealBtn
+    
+    local InstantStroke = Instance.new("UIStroke")
+    InstantStroke.Color = Color3.fromRGB(90, 90, 90)
+    InstantStroke.Thickness = 1
+    InstantStroke.Transparency = 0.5
+    InstantStroke.Parent = InstantStealBtn
+    
+    -- StatusDot
+    StatusDot.Name = "StatusDot"
+    StatusDot.Parent = Container
+    StatusDot.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    StatusDot.BorderSizePixel = 0
+    StatusDot.Position = UDim2.new(0.08, 0, 0.85, 0)
+    StatusDot.Size = UDim2.new(0, 6, 0, 6)
+    
+    local DotCorner = Instance.new("UICorner")
+    DotCorner.CornerRadius = UDim.new(1, 0)
+    DotCorner.Parent = StatusDot
+    
+    -- StatusLabel
+    StatusLabel.Name = "StatusLabel"
+    StatusLabel.Parent = Container
+    StatusLabel.BackgroundTransparency = 1
+    StatusLabel.Position = UDim2.new(0.08, 12, 0.82, 0)
+    StatusLabel.Size = UDim2.new(0.84, -12, 0, 12)
+    StatusLabel.Font = Enum.Font.Gotham
+    StatusLabel.Text = "Ready"
+    StatusLabel.TextColor3 = Color3.fromRGB(140, 140, 140)
+    StatusLabel.TextSize = 9
+    StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    -- FunÃ§Ã£o Creator Steal
+    local function CreatorSteal()
+        local character = LocalPlayer.Character
+        if not character or not character:FindFirstChild("HumanoidRootPart") then
+            StatusLabel.Text = "Character not found"
+            TweenService:Create(StatusLabel, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 100, 100)}):Play()
+            TweenService:Create(StatusDot, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 100, 100)}):Play()
+            wait(2)
+            StatusLabel.Text = "Ready"
+            TweenService:Create(StatusLabel, TweenInfo.new(0.3), {TextColor3 = Color3.fromRGB(140, 140, 140)}):Play()
+            TweenService:Create(StatusDot, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(100, 100, 100)}):Play()
+            return
+        end
+        
+        local hrp = character.HumanoidRootPart
+        
+        -- Teleportar para a parte
+        hrp.CFrame = creatorPart.CFrame + Vector3.new(0, 3, 0)
+        
+        StatusLabel.Text = "Teleported!"
+        TweenService:Create(StatusLabel, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(100, 255, 100)}):Play()
+        TweenService:Create(StatusDot, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(100, 255, 100)}):Play()
+        
+        wait(2)
+        StatusLabel.Text = "Ready"
+        TweenService:Create(StatusLabel, TweenInfo.new(0.3), {TextColor3 = Color3.fromRGB(140, 140, 140)}):Play()
+        TweenService:Create(StatusDot, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(100, 100, 100)}):Play()
+    end
+    
+    -- Efeitos hover Creator Steal
+    CreatorStealBtn.MouseEnter:Conne
